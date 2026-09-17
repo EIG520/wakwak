@@ -140,6 +140,10 @@ params! {
 
     qsldp_threshold: i32 => 2;
     qsdcp_threshold: i32 => 2;
+
+    move_stability_base:  u128 => 5325;
+    move_stability_scale: u128 => 410;
+    move_stability_min:   u128 => 2867;
 }
 
 impl Params {
@@ -284,5 +288,11 @@ impl Params {
             Piece::Queen => Self::mvvlva_queen(),
             Piece::King => 20000,
         }
+    }
+
+    #[inline]
+    pub fn move_stability(stability: u16) -> u128 {
+        (Self::move_stability_base() - Self::move_stability_scale() * stability as u128)
+            .max(Self::move_stability_min())
     }
 }
