@@ -124,6 +124,7 @@ pub enum Stage {
 pub struct MovePicker {
     stage: Stage,
     tt_move: Option<Move>,
+    null_best: Option<Move>,
     skip_quiets: bool,
     neutral_ducks: Bitboard,
     prune_quiet_neutrals: bool,
@@ -135,6 +136,7 @@ impl MovePicker {
     #[inline]
     pub fn new(
         tt_move: Option<Move>,
+        null_best: Option<Move>,
         neutral_ducks: Bitboard,
         prune_quiet_neutrals: bool,
         prune_noisy_neutrals: bool,
@@ -142,6 +144,7 @@ impl MovePicker {
         Self {
             stage: Stage::TTMove,
             tt_move,
+            null_best,
             skip_quiets: false,
             neutral_ducks,
             prune_quiet_neutrals,
@@ -250,6 +253,13 @@ impl MovePicker {
 
             scored.1 = mvv(board, mv) * 8
                 + thread.history.noisy(board, mv) / 8
+                + if let Some(nm) = self.null_best
+                    && nm.dest() == mv.duck()
+                {
+                    500
+                } else {
+                    0
+                }
                 + thread.history.duck(board, mv) / 8;
         }
 
@@ -276,6 +286,13 @@ impl MovePicker {
             scored.1 = thread.history.quiet(board, mv)
                 + thread.history.duck(board, mv)
                 + thread.history.cont(board, indices, mv)
+                + if let Some(nm) = self.null_best
+                    && nm.dest() == mv.duck()
+                {
+                    500
+                } else {
+                    0
+                }
                 - Params::mp_quiet_neutral_malus() * is_neutral as i32;
         }
 
