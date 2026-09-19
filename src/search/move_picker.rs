@@ -253,13 +253,6 @@ impl MovePicker {
 
             scored.1 = mvv(board, mv) * 8
                 + thread.history.noisy(board, mv) / 8
-                + if let Some(nm) = self.null_best
-                    && nm.dest() == mv.duck()
-                {
-                    500
-                } else {
-                    0
-                }
                 + thread.history.duck(board, mv) / 8;
         }
 
@@ -289,7 +282,7 @@ impl MovePicker {
                 + if let Some(nm) = self.null_best
                     && nm.dest() == mv.duck()
                 {
-                    500
+                    400
                 } else {
                     0
                 }
