@@ -2,8 +2,8 @@ use crate::board::{
     CastlingDirection, CastlingRights, EnPassant, SliderTag, ZOBRIST, bishop_attacks, rook_attacks,
 };
 use crate::common::{
-    Bitboard, Color, File, North, NorthEast, NorthWest, Piece, Rank, Square, between, king_attacks,
-    knight_attacks, pawn_attacks,
+    Bitboard, Color, File, Move, North, NorthEast, NorthWest, Piece, Rank, Square, between,
+    bishop_rays, king_attacks, knight_attacks, pawn_attacks, rook_rays,
 };
 use enum_map::EnumMap;
 
@@ -219,6 +219,27 @@ impl Board {
             relevant |= Rank::First.relative_to(them);
         }
         !relevant
+    }
+
+    #[inline]
+    pub fn blocking_ducks(&self, mv: Move) -> Bitboard {
+        let mut blocking = Bitboard::FULL;
+        let pc = self.piece_on(mv.src());
+
+        match pc {
+            Some(Piece::Pawn) => blocking &= mv.dest().bitboard(),
+            Some(Piece::Knight) => blocking &= mv.dest().bitboard(),
+            Some(Piece::Bishop) => blocking &= bishop_rays(mv.dest()) & bishop_rays(mv.src()),
+            Some(Piece::Rook) => blocking &= rook_rays(mv.dest()) & rook_rays(mv.src()),
+            Some(Piece::Queen) => {
+                blocking &= (bishop_rays(mv.dest()) & bishop_rays(mv.src()))
+                    | (rook_rays(mv.dest()) & rook_rays(mv.src()))
+            }
+            Some(Piece::King) => blocking &= mv.dest().bitboard(),
+            None => {}
+        };
+
+        blocking
     }
 
     #[inline]
