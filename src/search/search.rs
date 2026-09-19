@@ -30,7 +30,6 @@ pub fn iterative_deepening(
     let mut pv = PrincipalVariation::default();
     let mut score = None;
 
-    let mut duck_stability = 0;
     let mut move_stability = 0;
     let mut best_move = None;
     let mut prev_move;
@@ -57,11 +56,6 @@ pub fn iterative_deepening(
         pv = thread.stack[0].pv.clone();
         prev_move = best_move;
         best_move = Some(pv[0]);
-
-        duck_stability += 1;
-        if best_move.map(|mv| mv.duck()) == prev_move.map(|mv| mv.duck()) {
-            duck_stability += 1;
-        }
 
         move_stability += 1;
         if best_move != prev_move {
@@ -92,9 +86,7 @@ pub fn iterative_deepening(
                 break 'id;
             }
 
-            shared
-                .time_man
-                .deepen(depth, duck_stability, move_stability);
+            shared.time_man.deepen(depth, move_stability);
         }
     }
 
