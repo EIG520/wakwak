@@ -149,6 +149,11 @@ params! {
     soft_time_inc: u64 => 2048;
     hard_time_div: u64 => 12288;
     hard_time_inc: u64 => 4096;
+
+    duck_stability_base:  u128 => 5325;
+    duck_stability_scale: u128 => 410;
+    duck_stability_min:   u128 => 2867;
+
     move_stability_base:  u128 => 5325;
     move_stability_scale: u128 => 410;
     move_stability_min:   u128 => 2867;
@@ -296,6 +301,13 @@ impl Params {
             Piece::Queen => Self::mvvlva_queen(),
             Piece::King => 20000,
         }
+    }
+
+    #[inline]
+    pub fn duck_stability(stability: u16) -> u128 {
+        Self::duck_stability_base()
+            .saturating_sub(Self::duck_stability_scale() * stability as u128)
+            .max(Self::duck_stability_min())
     }
 
     #[inline]
