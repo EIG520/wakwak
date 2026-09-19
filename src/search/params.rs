@@ -158,10 +158,10 @@ params! {
     move_stability_scale: u128 => 410;
     move_stability_min:   u128 => 2867;
 
-    lmr_c:         i32 => 1024;
-    lmr_m:         i32 => 448;
-    lmr_improving: i32 => 1024;
-    lmr_pv:        i32 => 1024;
+    quiet_lmr_base:  i32 => 1024;
+    quiet_lmr_scale: i32 => 448;
+    lmr_imp:         i32 => 1024;
+    lmr_pv:          i32 => 1024;
 }
 
 impl Params {
@@ -323,9 +323,9 @@ impl Params {
     }
 
     #[inline]
-    pub fn lmr_base(depth: i32) -> i32 {
+    pub fn lmr(depth: i32) -> i32 {
         let log_depth = depth.ilog2() as i32;
 
-        Self::lmr_c() + log_depth * Self::lmr_m()
+        Self::quiet_lmr_base() + Self::quiet_lmr_scale() * log_depth
     }
 }
