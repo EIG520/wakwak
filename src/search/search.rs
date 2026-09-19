@@ -355,6 +355,12 @@ fn search<Node: NodeType>(
         }
     }
 
+    let null_best_blockers = if let Some(nb) = null_best {
+        pos.board().blocking_ducks(nb)
+    } else {
+        Bitboard::FULL
+    };
+
     // Internal Iterative Deepening
     if !Node::ROOT && Node::PV && depth >= 5 && tt_move.is_none() && thread.id == 0 {
         let iid_depth = (Params::iid_depth_scale() * depth - Params::iid_depth_reduction()) / 1024;
@@ -387,7 +393,7 @@ fn search<Node: NodeType>(
         !Node::PV && depth <= Params::ndp_depth() && !alpha.is_mate() && !beta.is_mate();
     let mut move_picker = MovePicker::new(
         tt_move,
-        null_best,
+        null_best_blockers,
         neutral_ducks,
         prune_neutrals,
         prune_neutrals,
@@ -708,8 +714,13 @@ fn qsearch<Node: NodeType>(
     let mut duck_safety = [(None, Bitboard::FULL); Square::COUNT];
     let neutral_ducks = pos.board().neutral_ducks();
     let prune_noisy_neutrals = !Node::PV && !alpha.is_mate() && !beta.is_mate();
-    let mut move_picker =
-        MovePicker::new(tt_move, None, neutral_ducks, false, prune_noisy_neutrals);
+    let mut move_picker = MovePicker::new(
+        tt_move,
+        Bitboard::FULL,
+        neutral_ducks,
+        false,
+        prune_noisy_neutrals,
+    );
     move_picker.skip_quiets();
     let mut best_move = None;
     let mut flag = TTFlag::Upper;
