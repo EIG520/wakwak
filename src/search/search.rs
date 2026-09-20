@@ -355,7 +355,9 @@ fn search<Node: NodeType>(
         }
     }
 
-    let null_best_blockers = if let Some(nb) = null_best {
+    let null_best_blockers = if depth <= Params::blocks_null_best_depth()
+        && let Some(nb) = null_best
+    {
         pos.board().blocking_ducks(nb)
     } else {
         Bitboard::FULL
