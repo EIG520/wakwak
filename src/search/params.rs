@@ -156,8 +156,8 @@ params! {
     ndp_depth: i32 => 8;
 
     mp_quiet_neutral_malus: i32 => 5000;
-    mp_quiet_blocks_null_best_bonus: i32 => 10;
-    mp_loud_blocks_null_best_bonus: i32 => 80;
+    mp_quiet_blocks_null_best_bonus: i32 => 5;
+    mp_loud_blocks_null_best_bonus: i32 => 40;
     blocks_null_best_depth: i32 => 9999;
 
     qsldp_threshold: i32 => 2;
