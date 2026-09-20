@@ -420,6 +420,19 @@ fn search<Node: NodeType>(
                 move_picker.skip_quiets();
                 continue;
             }
+
+            /*
+            Duck Count Pruning (DCP): After a certain number of moves containing a
+            given duck move, we can be reasonably confident that any move containing
+            that duck won't be much better, so we can skip the rest of them
+            */
+            if !Node::PV
+                && is_quiet
+                && depth <= Params::dcp_depth()
+                && duck_counts[duck] >= Params::dcp_threshold(depth, improving) as u8
+            {
+                continue;
+            }
         }
 
         if duck_safety[dest].0 != Some(src) {
@@ -430,32 +443,18 @@ fn search<Node: NodeType>(
         }
         let safe = duck_safety[dest].1;
 
-        if best_score.is_some() {
-            /*
-            Late Duck Pruning (LDP): After a certain number of duck moves for
-            a certain move, we can be reasonably confident they're not gonna get
-            much better, so we can skip the rest of them.
-            */
-            if safe == Bitboard::FULL
-                && lmr_depth <= Params::ldp_depth(is_quiet)
-                && ducks_by_move[src][dest]
-                    >= Params::ldp_threshold(lmr_depth, is_quiet, improving) as u8
-            {
-                continue;
-            }
-
-            /*
-            Duck Count Pruning (DCP): After a certain number of moves containing a
-            given duck move, we can be reasonably confident that any move containing
-            that duck won't be much better, so we can skip the rest of them
-             */
-            if !Node::PV
-                && is_quiet
-                && depth <= Params::dcp_depth()
-                && duck_counts[duck] >= Params::dcp_threshold(depth, improving) as u8
-            {
-                continue;
-            }
+        /*
+        Late Duck Pruning (LDP): After a certain number of duck moves for
+        a certain move, we can be reasonably confident they're not gonna get
+        much better, so we can skip the rest of them.
+        */
+        if best_score.is_some()
+            && safe == Bitboard::FULL
+            && lmr_depth <= Params::ldp_depth(is_quiet)
+            && ducks_by_move[src][dest]
+                >= Params::ldp_threshold(lmr_depth, is_quiet, improving) as u8
+        {
+            continue;
         }
 
         ducks_by_move[src][dest] += 1;
