@@ -710,6 +710,11 @@ fn qsearch<Node: NodeType>(
             continue;
         }
 
+        // Duck Count Pruning (DCP)
+        if !Node::PV && duck_counts[duck] >= Params::qsdcp_threshold() as u8 {
+            continue;
+        }
+
         if duck_safety[dest].0 != Some(src) {
             let mut board = *pos.board();
             // TODO: Calculate king capture blocks without making the full move.
@@ -720,11 +725,6 @@ fn qsearch<Node: NodeType>(
 
         // Late Duck Pruning (LDP)
         if safe == Bitboard::FULL && ducks_by_move[src][dest] >= Params::qsldp_threshold() as u8 {
-            continue;
-        }
-
-        // Duck Count Pruning (DCP)
-        if !Node::PV && duck_counts[duck] >= Params::qsdcp_threshold() as u8 {
             continue;
         }
 
