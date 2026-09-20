@@ -357,6 +357,7 @@ fn search<Node: NodeType>(
 
     let null_best_blockers = if depth <= Params::blocks_null_best_depth()
         && let Some(nb) = null_best
+        && nb.flag().is_quiet()
     {
         pos.board().blocking_ducks(nb)
     } else {
