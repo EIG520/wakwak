@@ -12,6 +12,7 @@ pub enum UciCommand {
     NewGame,
     IsReady,
     Display,
+    Eval,
     Bench {
         depth: u8,
     },
@@ -61,6 +62,7 @@ impl UciCommand {
             "ucinewgame" => Ok(NewGame),
             "isready" => Ok(IsReady),
             "display" | "d" => Ok(Display),
+            "eval" => Ok(Eval),
             "genfens" => parse_genfens_cmd(reader),
             "bench" => {
                 let depth = reader.next().map_or(Ok(DEFAULT_BENCH_DEPTH), str::parse)?;
@@ -101,7 +103,14 @@ impl UciCommand {
                     return Err(MissingOptionValueToken);
                 }
 
-                let value = reader.next().ok_or(MissingOptionValue)?.to_string();
+                let mut remaining = input.trim_start();
+                for token in [cmd, "name", name.as_str(), "value"] {
+                    remaining = remaining.strip_prefix(token).unwrap().trim_start();
+                }
+                let value = remaining.trim_end().to_string();
+                if value.is_empty() {
+                    return Err(MissingOptionValue);
+                }
                 Ok(SetOption { name, value })
             }
             _ => Err(UnknownCommand(cmd.to_string())),
