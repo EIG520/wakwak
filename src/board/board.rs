@@ -2,8 +2,8 @@ use crate::board::{
     CastlingDirection, CastlingRights, EnPassant, SliderTag, ZOBRIST, bishop_attacks, rook_attacks,
 };
 use crate::common::{
-    Bitboard, Color, File, Move, North, NorthEast, NorthWest, Piece, Rank, Square, between,
-    bishop_rays, king_attacks, knight_attacks, pawn_attacks, rook_rays,
+    Bitboard, Color, East, File, Move, North, NorthEast, NorthWest, Piece, Rank, South, SouthEast,
+    SouthWest, Square, West, between, king_attacks, knight_attacks, pawn_attacks,
 };
 use enum_map::EnumMap;
 
@@ -225,15 +225,33 @@ impl Board {
     pub fn blocking_ducks(&self, mv: Move) -> Bitboard {
         let mut blocking = Bitboard::FULL;
         let pc = self.piece_on(mv.src());
+        let src_bb = mv.src().bitboard();
+        let dest_bb = mv.dest().bitboard();
 
         match pc {
             Some(Piece::Pawn) => blocking &= mv.dest().bitboard(),
             Some(Piece::Knight) => blocking &= mv.dest().bitboard(),
-            Some(Piece::Bishop) => blocking &= bishop_rays(mv.dest()) & bishop_rays(mv.src()),
-            Some(Piece::Rook) => blocking &= rook_rays(mv.dest()) & rook_rays(mv.src()),
+            Some(Piece::Bishop) => {
+                blocking &= src_bb.smear::<NorthEast>() & dest_bb.smear::<SouthWest>()
+                    | src_bb.smear::<SouthEast>() & dest_bb.smear::<NorthWest>()
+                    | src_bb.smear::<SouthWest>() & dest_bb.smear::<NorthEast>()
+                    | src_bb.smear::<NorthWest>() & dest_bb.smear::<SouthEast>();
+            }
+            Some(Piece::Rook) => {
+                blocking &= src_bb.smear::<North>() & dest_bb.smear::<South>()
+                    | src_bb.smear::<East>() & dest_bb.smear::<West>()
+                    | src_bb.smear::<South>() & dest_bb.smear::<North>()
+                    | src_bb.smear::<West>() & dest_bb.smear::<East>()
+            }
             Some(Piece::Queen) => {
-                blocking &= (bishop_rays(mv.dest()) & bishop_rays(mv.src()))
-                    | (rook_rays(mv.dest()) & rook_rays(mv.src()))
+                blocking &= src_bb.smear::<NorthEast>() & dest_bb.smear::<SouthWest>()
+                    | src_bb.smear::<SouthEast>() & dest_bb.smear::<NorthWest>()
+                    | src_bb.smear::<SouthWest>() & dest_bb.smear::<NorthEast>()
+                    | src_bb.smear::<NorthWest>() & dest_bb.smear::<SouthEast>()
+                    | src_bb.smear::<North>() & dest_bb.smear::<South>()
+                    | src_bb.smear::<East>() & dest_bb.smear::<West>()
+                    | src_bb.smear::<South>() & dest_bb.smear::<North>()
+                    | src_bb.smear::<West>() & dest_bb.smear::<East>()
             }
             Some(Piece::King) => blocking &= mv.dest().bitboard(),
             None => {}
