@@ -380,9 +380,9 @@ fn search<Node: NodeType>(
     let mut failed_quiets = Vec::new();
     let mut failed_noisies = Vec::new();
     let neutral_ducks = pos.board().neutral_ducks();
-    let prune_quiet_neutrals =
+    let prune_neutrals =
         !Node::PV && depth <= Params::ndp_depth() && !alpha.is_mate() && !beta.is_mate();
-    let mut move_picker = MovePicker::new(tt_move, neutral_ducks, prune_quiet_neutrals, false);
+    let mut move_picker = MovePicker::new(tt_move, neutral_ducks, prune_neutrals, prune_neutrals);
     let mut ducks_by_move: [[u8; Square::COUNT]; Square::COUNT] =
         [[0; Square::COUNT]; Square::COUNT];
     let mut duck_counts: [u8; Square::COUNT] = [0; Square::COUNT];
