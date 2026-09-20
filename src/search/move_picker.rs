@@ -250,10 +250,12 @@ impl MovePicker {
             if self.tt_move == Some(mv) {
                 continue;
             }
+            let blocks_nullbest = self.null_best_blockers.has(mv.duck());
 
             scored.1 = mvv(board, mv) * 8
                 + thread.history.noisy(board, mv) / 8
-                + thread.history.duck(board, mv) / 8;
+                + thread.history.duck(board, mv) / 8
+                + Params::mp_loud_blocks_null_best_bonus() * blocks_nullbest as i32;
         }
 
         moves[start..].sort_unstable_by_key(|m| Reverse(m.1));
