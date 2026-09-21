@@ -631,6 +631,9 @@ fn qsearch<Node: NodeType>(
     }
 
     if ply >= MAX_PLY {
+        if pos.board().try_king(pos.board().stm()).is_none() {
+            return Score::mated(ply);
+        }
         return adjust_eval(pos.eval(), thread.history.corr(pos.board()));
     }
 
