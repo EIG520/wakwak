@@ -200,12 +200,11 @@ fn search<Node: NodeType>(
         return Score::ZERO;
     }
 
+    thread.stack[ply].mv = None;
+    thread.sel_depth = thread.sel_depth.max(ply);
     if Node::PV {
         thread.stack[ply].pv.clear();
     }
-    thread.stack[ply].mv = None;
-
-    thread.sel_depth = thread.sel_depth.max(ply);
 
     if depth <= 0 {
         return qsearch::<Node>(pos, thread, shared, alpha, beta, ply);
@@ -623,7 +622,6 @@ fn qsearch<Node: NodeType>(
     beta: Score,
     ply: usize,
 ) -> Score {
-    thread.nodes.inc();
     if thread.stop || shared.time_man.stop_search(thread) {
         shared.time_man.set_stop(true);
         thread.stop = true;
@@ -631,22 +629,16 @@ fn qsearch<Node: NodeType>(
         return Score::ZERO;
     }
 
-    if ply >= MAX_PLY {
-        if pos.board().try_king(pos.board().stm()).is_none() {
-            return Score::mated(ply);
-        }
-        return adjust_eval(pos.eval(), thread.history.corr(pos.board()));
-    }
-
     debug_assert!(ply > 0 && ply < MAX_PLY);
     debug_assert!(-Score::INFINITE <= alpha && alpha < beta && beta <= Score::INFINITE);
     debug_assert!(Node::PV || alpha == beta - 1);
 
+    thread.nodes.inc();
+    thread.stack[ply].mv = None;
+    thread.sel_depth = thread.sel_depth.max(ply);
     if Node::PV {
         thread.stack[ply].pv.clear();
     }
-    thread.stack[ply].mv = None;
-    thread.sel_depth = thread.sel_depth.max(ply);
 
     // King captured, gg
     if pos.board().try_king(pos.board().stm()).is_none() {
@@ -656,6 +648,10 @@ fn qsearch<Node: NodeType>(
     // 50-move-rule + threefold repetition detection
     if pos.board().hmc() >= 100 || pos.repetition() {
         return Score::draw();
+    }
+
+    if ply >= MAX_PLY {
+        return adjust_eval(pos.eval(), thread.history.corr(pos.board()));
     }
 
     // Transposition Table Cutoffs
