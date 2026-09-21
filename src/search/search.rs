@@ -333,7 +333,7 @@ fn search<Node: NodeType>(
         let r = 5 + depth / 3;
         pos.make_null_move();
         let score = -search::<NonPV>(pos, thread, shared, -beta, -beta + 1, depth - r, ply + 1);
-        null_best = thread.search_move;
+        null_best = thread.stack[ply + 1].mv;
         pos.unmake_null_move();
 
         if thread.stop {
@@ -346,7 +346,6 @@ fn search<Node: NodeType>(
             } else {
                 thread.nmr_ply = Some(ply);
                 let score = search::<NonPV>(pos, thread, shared, alpha, beta, depth / 2, ply);
-                null_best = thread.search_move;
                 thread.nmr_ply = None;
                 if score >= beta {
                     return score;
@@ -355,8 +354,7 @@ fn search<Node: NodeType>(
         }
     }
 
-    let null_best_blockers = if depth <= Params::blocks_null_best_depth()
-        && let Some(nb) = null_best
+    let null_best_blockers = if let Some(nb) = null_best
         && nb.flag().is_quiet()
     {
         pos.board().blocking_ducks(nb)
@@ -394,13 +392,7 @@ fn search<Node: NodeType>(
     let neutral_ducks = pos.board().neutral_ducks();
     let prune_neutrals =
         !Node::PV && depth <= Params::ndp_depth() && !alpha.is_mate() && !beta.is_mate();
-    let mut move_picker = MovePicker::new(
-        tt_move,
-        null_best_blockers,
-        neutral_ducks,
-        prune_neutrals,
-        prune_neutrals,
-    );
+    let mut move_picker = MovePicker::new(tt_move, neutral_ducks, prune_neutrals, prune_neutrals);
     let mut ducks_by_move: [[u8; Square::COUNT]; Square::COUNT] =
         [[0; Square::COUNT]; Square::COUNT];
     let mut duck_counts: [u8; Square::COUNT] = [0; Square::COUNT];
@@ -499,6 +491,7 @@ fn search<Node: NodeType>(
                     r += Params::lmr_exact() * (flag == TTFlag::Exact) as i32;
                     r += Params::lmr_imp() * !improving as i32;
                     r += Params::lmr_pv() * !Node::PV as i32;
+                    r += Params::null_best_reducktion() * !null_best_blockers.has(mv.duck()) as i32;
                     r / 1024
                 } else {
                     0
@@ -630,8 +623,6 @@ fn search<Node: NodeType>(
             .update_corr(pos.board(), depth, best_score, static_eval);
     }
 
-    thread.search_move = best_move;
-
     best_score
 }
 
@@ -717,13 +708,7 @@ fn qsearch<Node: NodeType>(
     let mut duck_safety = [(None, Bitboard::FULL); Square::COUNT];
     let neutral_ducks = pos.board().neutral_ducks();
     let prune_noisy_neutrals = !Node::PV && !alpha.is_mate() && !beta.is_mate();
-    let mut move_picker = MovePicker::new(
-        tt_move,
-        Bitboard::FULL,
-        neutral_ducks,
-        false,
-        prune_noisy_neutrals,
-    );
+    let mut move_picker = MovePicker::new(tt_move, neutral_ducks, false, prune_noisy_neutrals);
     move_picker.skip_quiets();
     let mut best_move = None;
     let mut flag = TTFlag::Upper;

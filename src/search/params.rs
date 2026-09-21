@@ -156,9 +156,6 @@ params! {
     ndp_depth: i32 => 8;
 
     mp_quiet_neutral_malus: i32 => 5000;
-    mp_quiet_blocks_null_best_bonus: i32 => 80;
-    mp_loud_blocks_null_best_bonus: i32 => 10;
-    blocks_null_best_depth: i32 => 9999;
 
     qsldp_threshold: i32 => 2;
     qsdcp_threshold: i32 => 2;
@@ -181,6 +178,8 @@ params! {
     lmr_exact:       i32 => 1024;
     lmr_imp:         i32 => 1024;
     lmr_pv:          i32 => 1024;
+
+    null_best_reducktion: i32 => 1024;
 
     fp_base:  i32 => 256;
     fp_scale: i32 => 128;

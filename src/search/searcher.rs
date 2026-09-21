@@ -1,4 +1,3 @@
-use crate::common::Move;
 use crate::engine::EngineOptions;
 use crate::position::Position;
 use crate::search::tt::TranspositionTable;
@@ -216,7 +215,6 @@ impl Default for SharedData {
 
 pub struct ThreadData {
     pub nodes: BatchedAtomicCounter,
-    pub search_move: Option<Move>,
     pub move_stack: MoveStack,
     pub stack: Vec<SearchStack>,
     pub history: Box<History>,
@@ -232,7 +230,6 @@ impl ThreadData {
     pub fn new(nodes: Arc<AtomicU64>, id: usize) -> Self {
         Self {
             nodes: BatchedAtomicCounter::new(nodes),
-            search_move: None,
             move_stack: MoveStack::default(),
             stack: vec![SearchStack::default(); MAX_PLY + 1],
             history: unsafe { Box::new_zeroed().assume_init() },
@@ -250,7 +247,6 @@ impl ThreadData {
         self.stack = vec![SearchStack::default(); MAX_PLY + 1];
         self.move_stack.reset();
         self.sel_depth = 0;
-        self.search_move = None;
         self.stop = false;
     }
 }
