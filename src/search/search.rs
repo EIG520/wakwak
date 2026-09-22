@@ -255,7 +255,9 @@ fn search<Node: NodeType>(
         && entry.flag() == TTFlag::Lower
         && !entry.score().is_mate()
     {
-        let cutoff = !Node::PV && entry.depth() >= depth && entry.score() >= beta;
+        let cutoff = !Node::PV
+            && entry.depth() >= depth - 1
+            && entry.score() >= beta + (Params::ttfp_scale() * (depth - entry.depth()).max(0));
         if (cutoff || tt_move.is_none())
             && let Some(mv) = entry.best_move()
             && pos.board().is_legal(mv)

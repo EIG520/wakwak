@@ -113,6 +113,8 @@ params! {
     rfp_imp_base:  i32 => -50;
     rfp_imp_scale: i32 => 50;
 
+    ttfp_scale:    i32 => 150;
+
     razor_base:  i32 => 320;
     razor_scale: i32 => 250;
 
