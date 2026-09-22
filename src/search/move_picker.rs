@@ -138,6 +138,7 @@ pub struct MovePicker {
     tt_move: Option<Move>,
     see_threshold: i32,
     skip_quiets: bool,
+    skip_bad_noisies: bool,
     neutral_ducks: Bitboard,
     prune_quiet_neutrals: bool,
     prune_noisy_neutrals: bool,
@@ -159,6 +160,7 @@ impl MovePicker {
             tt_move,
             see_threshold,
             skip_quiets: false,
+            skip_bad_noisies: false,
             neutral_ducks,
             prune_quiet_neutrals,
             prune_noisy_neutrals,
@@ -170,9 +172,11 @@ impl MovePicker {
     #[inline]
     pub fn skip_quiets(&mut self) {
         self.skip_quiets = true;
-        if matches!(self.stage, Stage::GenerateQuiets | Stage::YieldQuiets) {
-            self.stage = Stage::Finished;
-        }
+    }
+
+    #[inline]
+    pub fn skip_bad_noisies(&mut self) {
+        self.skip_bad_noisies = true;
     }
 
     pub fn next(
@@ -237,7 +241,9 @@ impl MovePicker {
         }
 
         if self.stage == Stage::YieldBadNoisies {
-            if let Some(mv) = self.yield_until(thread, self.bad_noisy_count) {
+            if !self.skip_bad_noisies
+                && let Some(mv) = self.yield_until(thread, self.bad_noisy_count)
+            {
                 return Some(mv);
             }
 
