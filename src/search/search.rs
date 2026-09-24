@@ -387,6 +387,7 @@ fn search<Node: NodeType>(
     let mut duck_counts: [u8; Square::COUNT] = [0; Square::COUNT];
     let mut duck_refutations = [(None, Bitboard::EMPTY); Square::COUNT];
     let mut duck_safety = [(None, Bitboard::FULL); Square::COUNT];
+    let mut unique_ducks = 0;
     let mut flag = TTFlag::Upper;
 
     let indices = ContIndices::new(pos);
@@ -451,6 +452,14 @@ fn search<Node: NodeType>(
             }
 
             /*
+            Unique Duck Pruning (UDP) After we have encountered enough duck placements, we can be
+            reasonably confident that no future duck will improve our position, so we skip it.
+             */
+            if is_quiet && unique_ducks > Params::udp_threshold(depth) {
+                continue;
+            }
+
+            /*
             SEE Pruning: Prune moves that have bad SEE score idk
             */
             if !is_quiet
@@ -469,6 +478,7 @@ fn search<Node: NodeType>(
 
         move_counts[src][dest] += 1;
         duck_counts[duck] += 1;
+        unique_ducks += (duck_counts[duck] == 1) as i32;
         pos.make_move(mv);
 
         /*
