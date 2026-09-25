@@ -399,6 +399,7 @@ fn search<Node: NodeType>(
     let mut duck_refutations = [(None, Bitboard::EMPTY); Square::COUNT];
     let mut duck_safety = [(None, Bitboard::FULL); Square::COUNT];
     let mut unique_ducks = 0;
+    let mut unique_moves = 0;
     let mut flag = TTFlag::Upper;
 
     let indices = ContIndices::new(pos);
@@ -470,6 +471,17 @@ fn search<Node: NodeType>(
             }
 
             /*
+            Unique Move Pruning (UMP) After a certain number of unique moves (ignoring ducks), we can
+            apply pruning similar to LMP in normal chess, to skip late quiet moves
+             */
+            if is_quiet
+                && move_counts[src][dest] == 0
+                && unique_moves > Params::ump_threshold(depth)
+            {
+                continue;
+            }
+
+            /*
             SEE Pruning: Prune moves that have bad SEE score idk
             */
             if depth <= 10
@@ -486,6 +498,7 @@ fn search<Node: NodeType>(
         let safe = duck_safety[dest].1;
 
         move_counts[src][dest] += 1;
+        unique_moves += (move_counts[src][dest] == 1) as i32;
         duck_counts[duck] += 1;
         unique_ducks += (duck_counts[duck] == 1) as i32;
         pos.make_move(mv);
