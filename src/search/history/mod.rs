@@ -30,6 +30,7 @@ pub struct History {
     duck: DuckHistory,
     cont_odd: ContHistory,
     cont_even: ContHistory,
+    cont_odd_duck: ContDuckHistory,
     pawn_corr: CorrHistory<PAWN_CORR_SIZE>,
     minor_corr: CorrHistory<MINOR_CORR_SIZE>,
     major_corr: CorrHistory<MAJOR_CORR_SIZE>,
@@ -113,6 +114,8 @@ impl History {
             .update::<2, BONUS>(board, depth, mv, indices.cont2);
         self.cont_even
             .update::<4, BONUS>(board, depth, mv, indices.cont4);
+        self.cont_odd_duck
+            .update::<1, BONUS>(board, depth, mv, indices.cont1)
     }
 
     #[inline]
@@ -163,6 +166,13 @@ impl History {
     pub fn cont4(&self, board: &Board, indices: ContIndices, mv: Move) -> i32 {
         self.cont_even
             .entry(board, mv, indices.cont4)
+            .unwrap_or_default()
+    }
+
+    #[inline]
+    pub fn duckcont1(&self, board: &Board, indices: ContIndices, mv: Move) -> i32 {
+        self.cont_odd_duck
+            .entry(board, mv, indices.cont1)
             .unwrap_or_default()
     }
 
