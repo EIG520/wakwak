@@ -222,6 +222,7 @@ impl MovePicker {
         if self.stage == Stage::GenerateQuiets {
             if self.skip_quiets {
                 self.stage = Stage::YieldBadNoisies;
+                self.cursor = 0;
             } else {
                 let start = thread.move_stack.add_moves::<Quiet>(
                     board,
