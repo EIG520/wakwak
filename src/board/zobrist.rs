@@ -32,6 +32,7 @@ pub struct Zobrist {
     pub en_passant: [u64; File::COUNT],
     pub duck: [u64; Square::COUNT],
     pub stm: u64,
+    pub neutral_duck: u64,
 }
 
 impl Zobrist {
@@ -43,6 +44,7 @@ impl Zobrist {
             castling_rights: [[0; File::COUNT]; Color::COUNT],
             en_passant: [0; File::COUNT],
             duck: [0; Square::COUNT],
+            neutral_duck: 0,
             stm: 0,
         };
 
@@ -71,6 +73,7 @@ impl Zobrist {
         }
 
         zobrist.stm = rng.next();
+        zobrist.neutral_duck = rng.next();
         zobrist
     }
 

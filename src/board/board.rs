@@ -113,13 +113,7 @@ impl Board {
 
     #[inline]
     pub fn hash(&self) -> u64 {
-        if let Some(d) = self.duck()
-            && !self.neutral_ducks().has(d)
-        {
-            self.hash
-        } else {
-            self.duckless_hash()
-        }
+        self.hash
     }
 
     #[inline]
@@ -150,6 +144,17 @@ impl Board {
     #[inline]
     pub fn duckless_hash(&self) -> u64 {
         self.hash ^ self.duck.map_or(0, |sq| ZOBRIST.duck(sq))
+    }
+
+    #[inline]
+    pub fn neutral_duckless_hash(&self) -> u64 {
+        if let Some(d) = self.duck()
+            && self.neutral_ducks().has(d)
+        {
+            self.duckless_hash() ^ ZOBRIST.neutral_duck
+        } else {
+            self.hash()
+        }
     }
 
     #[inline]

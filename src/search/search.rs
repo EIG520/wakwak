@@ -257,7 +257,7 @@ fn search<Node: NodeType>(
     that stored result instead of wasting time searching it again.
     */
     let skip_move = thread.stack[ply].skip_move;
-    let tt_entry = shared.tt.probe(pos.board().hash());
+    let tt_entry = shared.tt.probe(pos.board().neutral_duckless_hash());
     let mut tt_move = tt_entry.and_then(|e| e.best_move());
 
     if !Node::ROOT
@@ -410,7 +410,7 @@ fn search<Node: NodeType>(
         _ = search::<PV>(pos, thread, shared, alpha, beta, iid_depth, ply);
         thread.iid_iteration -= 1;
 
-        let entry = shared.tt.probe(pos.board().hash());
+        let entry = shared.tt.probe(pos.board().neutral_duckless_hash());
         if thread.iid_iteration > 0
             && let Some(entry) = entry
             && entry.depth() >= depth
@@ -733,7 +733,7 @@ fn search<Node: NodeType>(
 
     if skip_move.is_none() {
         shared.tt.insert(
-            pos.board().hash(),
+            pos.board().neutral_duckless_hash(),
             best_move,
             best_score,
             best_move_depth,
@@ -805,7 +805,7 @@ fn qsearch<Node: NodeType>(
     }
 
     // Transposition Table Cutoffs
-    let tt_entry = shared.tt.probe(pos.board().hash());
+    let tt_entry = shared.tt.probe(pos.board().neutral_duckless_hash());
 
     // Only use noisy TT moves
     let tt_move = tt_entry
@@ -931,9 +931,13 @@ fn qsearch<Node: NodeType>(
 
     thread.move_stack.pop_ply();
 
-    shared
-        .tt
-        .insert(pos.board().hash(), best_move, best_score, 0, bound);
+    shared.tt.insert(
+        pos.board().neutral_duckless_hash(),
+        best_move,
+        best_score,
+        0,
+        bound,
+    );
 
     best_score
 }
