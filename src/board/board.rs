@@ -113,7 +113,13 @@ impl Board {
 
     #[inline]
     pub fn hash(&self) -> u64 {
-        self.hash
+        if let Some(d) = self.duck()
+            && !self.neutral_ducks().has(d)
+        {
+            self.hash
+        } else {
+            self.duckless_hash()
+        }
     }
 
     #[inline]
