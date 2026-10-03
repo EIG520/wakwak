@@ -149,9 +149,9 @@ impl Board {
     #[inline]
     pub fn neutral_duckless_hash(&self) -> u64 {
         if let Some(d) = self.duck()
-            && self.neutral_ducks().has(d)
+            && self.neutral_ducks_side(!self.stm).has(d)
         {
-            self.duckless_hash() ^ ZOBRIST.neutral_duck
+            self.duckless_hash()
         } else {
             self.hash()
         }
@@ -296,8 +296,8 @@ impl Board {
     }
 
     #[inline]
-    pub fn neutral_ducks(&self) -> Bitboard {
-        let them = !self.stm;
+    pub fn neutral_ducks_side(&self, side: Color) -> Bitboard {
+        let them = !side;
         let blockers = self.colors(them);
         let pawns = self.colored_pieces(them, Piece::Pawn);
         let mut relevant = pawns.shift::<North>(them.signum())
@@ -322,6 +322,11 @@ impl Board {
             relevant |= Rank::First.relative_to(them);
         }
         !relevant
+    }
+
+    #[inline]
+    pub fn neutral_ducks(&self) -> Bitboard {
+        self.neutral_ducks_side(self.stm)
     }
 
     #[inline]
