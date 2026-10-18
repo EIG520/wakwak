@@ -34,7 +34,7 @@ impl DuckCountHistory {
 
     #[inline]
     pub fn update(&mut self, board: &Board, depth: i32, mv: Move, duck_count: u8) {
-        let diff = ((duck_count as i32 - 4) * 32) - self.entry(board, mv);
+        let diff = duck_count as i32 * 32 - self.entry(board, mv);
         gravity::<{ MAX_HISTORY / 4 }, MAX_HISTORY>(self.entry_mut(board, mv), diff * depth / 10);
     }
 }
