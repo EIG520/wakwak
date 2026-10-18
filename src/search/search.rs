@@ -520,9 +520,9 @@ fn search<Node: NodeType>(
             if !Node::PV
                 && is_quiet
                 && duck_counts[duck] as i32
-                    >= Params::dcp_threshold(depth, improving, duck_history)
-                        + thread.history.duck_count(pos.board(), mv)
-                        - 2
+                    >= (Params::dcp_threshold(depth, improving, duck_history)
+                        + thread.history.duck_count(pos.board(), mv))
+                    .max(1)
             {
                 continue;
             }
