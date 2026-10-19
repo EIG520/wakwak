@@ -223,7 +223,7 @@ impl History {
 
     #[inline]
     pub fn duck_count(&self, board: &Board, mv: Move) -> i32 {
-        self.duck_count.entry(board, mv) / 32
+        self.duck_count.entry(board, mv) / Params::duck_count_hist_scale()
     }
 }
 

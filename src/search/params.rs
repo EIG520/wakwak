@@ -241,6 +241,7 @@ params! {
     lmr_in_check:    i32 => 1057;
     lmr_history:     i32 => 67;
     lmr_corr:        i32 => 3018;
+    lmr_duck_count:  i32 => 1024;
 
     fp_base:             i32 => 99;
     fp_scale:            i32 => 93;
@@ -271,6 +272,8 @@ params! {
 
     noisy_mp_noisy_scale: i32 => 144;
     noisy_mp_duck_scale:  i32 => 146;
+
+    duck_count_hist_scale: i32 => 32;
 }
 
 impl Params {

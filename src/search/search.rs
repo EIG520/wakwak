@@ -635,7 +635,7 @@ fn search<Node: NodeType>(
                     r += Params::lmr_pv() * !Node::PV as i32;
                     r += Params::lmr_imp() * !improving as i32;
                     r += Params::lmr_exact() * (bound == Bound::Exact) as i32;
-                    r += 1024
+                    r += Params::lmr_duck_count()
                         * (duck_counts[duck] as i32
                             > 1 + thread.history.duck_count(pos.board(), mv))
                             as i32;
