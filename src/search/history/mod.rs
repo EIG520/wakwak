@@ -134,12 +134,16 @@ impl History {
         self.quiet.update::<BONUS>(board, depth, mv);
         self.pawn.update::<BONUS>(board, depth, mv);
         self.quiet_duck.update::<BONUS>(board, depth, mv);
+
+        let total_cont_score = self.cont1(board, indices, mv)
+            + self.cont2(board, indices, mv)
+            + self.cont4(board, indices, mv);
         self.cont_odd
-            .update::<1, BONUS>(board, depth, mv, indices.cont1);
+            .update::<1, BONUS>(board, depth, mv, indices.cont1, total_cont_score);
         self.cont_even
-            .update::<2, BONUS>(board, depth, mv, indices.cont2);
+            .update::<2, BONUS>(board, depth, mv, indices.cont2, total_cont_score);
         self.cont_even
-            .update::<4, BONUS>(board, depth, mv, indices.cont4);
+            .update::<4, BONUS>(board, depth, mv, indices.cont4, total_cont_score);
     }
 
     #[inline]
