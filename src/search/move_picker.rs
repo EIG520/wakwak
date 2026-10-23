@@ -139,6 +139,7 @@ pub struct MovePicker {
     see_threshold: i32,
     skip_quiets: bool,
     skip_bad_noisies: bool,
+    threats: Bitboard,
     neutral_ducks: Bitboard,
     prune_quiet_neutrals: bool,
     prune_noisy_neutrals: bool,
@@ -153,6 +154,7 @@ impl MovePicker {
     pub fn new(
         tt_move: Option<Move>,
         see_threshold: i32,
+        threats: Bitboard,
         neutral_ducks: Bitboard,
         prune_quiet_neutrals: bool,
         prune_noisy_neutrals: bool,
@@ -163,6 +165,7 @@ impl MovePicker {
             see_threshold,
             skip_quiets: false,
             skip_bad_noisies: false,
+            threats,
             neutral_ducks,
             prune_quiet_neutrals,
             prune_noisy_neutrals,
@@ -357,8 +360,9 @@ impl MovePicker {
             }
             let is_neutral = self.neutral_ducks.has(mv.duck());
 
-            scored.1 = Params::quiet_mp_history(thread.history.as_ref(), board, indices, mv)
-                - Params::mp_quiet_neutral_malus() * is_neutral as i32;
+            scored.1 =
+                Params::quiet_mp_history(thread.history.as_ref(), board, self.threats, indices, mv)
+                    - Params::mp_quiet_neutral_malus() * is_neutral as i32;
         }
     }
 }

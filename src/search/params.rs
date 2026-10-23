@@ -1,5 +1,5 @@
 use crate::board::Board;
-use crate::common::{Move, Piece};
+use crate::common::{Bitboard, Move, Piece};
 use crate::position::Position;
 use crate::search::{ContIndices, History, ThreadData};
 #[cfg(feature = "tune")]
@@ -557,13 +557,14 @@ impl Params {
     pub fn quiet_lmr_history(
         thread: &ThreadData,
         pos: &Position,
+        threats: Bitboard,
         indices: ContIndices,
         mv: Move,
     ) -> i32 {
         let board = pos.board();
         let mut history = 0;
 
-        history += thread.history.quiet(board, mv) * Self::quiet_lmr_quiet_scale();
+        history += thread.history.quiet(board, threats, mv) * Self::quiet_lmr_quiet_scale();
         history += thread.history.duck(board, mv) * Self::quiet_lmr_duck_scale();
         history += thread.history.cont1(board, indices, mv) * Self::quiet_lmr_cont1_scale();
         history += thread.history.cont2(board, indices, mv) * Self::quiet_lmr_cont2_scale();
@@ -575,12 +576,13 @@ impl Params {
     pub fn quiet_mp_history(
         history: &History,
         board: &Board,
+        threats: Bitboard,
         indices: ContIndices,
         mv: Move,
     ) -> i32 {
         let mut history_score = 0;
 
-        history_score += history.quiet(board, mv) * Self::quiet_mp_quiet_scale();
+        history_score += history.quiet(board, threats, mv) * Self::quiet_mp_quiet_scale();
         history_score += history.duck(board, mv) * Self::quiet_mp_duck_scale();
         history_score += history.pawn(board, mv) * Self::quiet_mp_pawn_scale();
         history_score += history.quiet_duck(board, mv) * Self::quiet_mp_quiet_duck_scale();
@@ -605,13 +607,14 @@ impl Params {
     pub fn quiet_hp_history(
         thread: &ThreadData,
         pos: &Position,
+        threats: Bitboard,
         indices: ContIndices,
         mv: Move,
     ) -> i32 {
         let board = pos.board();
         let mut history = 0;
 
-        history += thread.history.quiet(board, mv) * Self::quiet_hp_quiet_scale();
+        history += thread.history.quiet(board, threats, mv) * Self::quiet_hp_quiet_scale();
         history += thread.history.duck(board, mv) * Self::quiet_hp_duck_scale();
         history += thread.history.cont1(board, indices, mv) * Self::quiet_hp_cont1_scale();
         history += thread.history.cont2(board, indices, mv) * Self::quiet_hp_cont2_scale();
@@ -638,11 +641,17 @@ impl Params {
     }
 
     #[inline]
-    pub fn fp_history(thread: &ThreadData, pos: &Position, indices: ContIndices, mv: Move) -> i32 {
+    pub fn fp_history(
+        thread: &ThreadData,
+        pos: &Position,
+        threats: Bitboard,
+        indices: ContIndices,
+        mv: Move,
+    ) -> i32 {
         let board = pos.board();
         let mut history = 0;
 
-        history += thread.history.quiet(board, mv) * Self::fp_hist_quiet_scale();
+        history += thread.history.quiet(board, threats, mv) * Self::fp_hist_quiet_scale();
         history += thread.history.duck(board, mv) * Self::fp_hist_duck_scale();
         history += thread.history.cont1(board, indices, mv) * Self::fp_hist_cont1_scale();
         history += thread.history.cont2(board, indices, mv) * Self::fp_hist_cont2_scale();

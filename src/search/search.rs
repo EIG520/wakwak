@@ -477,11 +477,13 @@ fn search<Node: NodeType>(
     let mut searched_moves = 0;
     let mut failed_quiets = Vec::new();
     let mut failed_noisies = Vec::new();
+    let threats = pos.board().threats(!pos.board().stm());
     let neutral_ducks = pos.board().neutral_ducks();
     let prune_neutrals = !Node::PV && depth <= 8 && !alpha.is_mate() && !beta.is_mate();
     let mut move_picker = MovePicker::new(
         tt_move,
         Params::mp_see_threshold(),
+        threats,
         neutral_ducks,
         prune_neutrals,
         prune_neutrals,
@@ -511,7 +513,7 @@ fn search<Node: NodeType>(
         let lmr_depth = depth.saturating_sub(base_reduction / 1024);
 
         let lmr_history = if is_quiet {
-            Params::quiet_lmr_history(thread, pos, cont_indices, mv)
+            Params::quiet_lmr_history(thread, pos, threats, cont_indices, mv)
         } else {
             Params::noisy_lmr_history(thread, pos, mv)
         };
@@ -534,7 +536,7 @@ fn search<Node: NodeType>(
             Futility Pruning: If we are unlikely to raise alpha with a quiet move, we do skip
             quiet moves.
             */
-            let fp_history = Params::fp_history(thread, pos, cont_indices, mv);
+            let fp_history = Params::fp_history(thread, pos, threats, cont_indices, mv);
             if is_quiet
                 && lmr_depth <= 8
                 && static_eval + Params::fp_margin(lmr_depth, fp_history) <= alpha
@@ -547,7 +549,7 @@ fn search<Node: NodeType>(
             History Pruning (HP): Prune quiet moves with terrible history scores
             */
             if is_quiet
-                && Params::quiet_hp_history(thread, pos, cont_indices, mv)
+                && Params::quiet_hp_history(thread, pos, threats, cont_indices, mv)
                     < Params::quiet_hp_margin(depth)
             {
                 move_picker.skip_quiets();
@@ -783,6 +785,7 @@ fn search<Node: NodeType>(
                 bound = Bound::Lower;
                 thread.history.update(
                     pos.board(),
+                    threats,
                     cont_indices,
                     depth,
                     best_move.unwrap(),
@@ -956,11 +959,13 @@ fn qsearch<Node: NodeType>(
     let mut duck_counts: [u8; Square::COUNT] = [0; Square::COUNT];
     let mut duck_refutations = [Bitboard::EMPTY; Square::COUNT];
     let mut duck_safety = [(None, Bitboard::FULL); Square::COUNT];
+    let threats = pos.board().threats(!pos.board().stm());
     let neutral_ducks = pos.board().neutral_ducks();
     let prune_noisy_neutrals = !Node::PV && !alpha.is_mate() && !beta.is_mate();
     let mut move_picker = MovePicker::new(
         tt_move,
         Params::mp_qs_see_threshold(),
+        threats,
         neutral_ducks,
         false,
         prune_noisy_neutrals,
